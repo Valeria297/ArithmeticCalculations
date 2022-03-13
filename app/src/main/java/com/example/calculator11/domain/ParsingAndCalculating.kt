@@ -1,10 +1,8 @@
-package com.example.calculator11
+package com.example.calculator11.domain
 
 class ParsingAndCalculating {
-    private val addCommand = AddCommand()
-    private val subCommand = SubCommand()
-    private val devCommand = DevCommand()
-    private val mulCommand = MulCommand()
+
+    private val command = CommandPattern()
 
     fun parser(operation: String): List<String> {
         val cleanOperation = operation.filter {
@@ -32,10 +30,10 @@ class ParsingAndCalculating {
         val zeroPriorityIterator = operators.iterator()
         for ((index) in zeroPriorityIterator.withIndex()) {
 
-            if(operators[index] == '('.toString() || nestedOperation.count() > 0){
+            if (operators[index] == '('.toString() || nestedOperation.count() > 0) {
 
-                if(operators[index] == '('.toString()) openNestedOperations++;
-                if(operators[index] == ')'.toString()) openNestedOperations--;
+                if (operators[index] == '('.toString()) openNestedOperations++;
+                if (operators[index] == ')'.toString()) openNestedOperations--;
                 nestedOperation.add(operators[index])
 
                 if (operators[index] == ')'.toString() && openNestedOperations == 0) {
@@ -44,7 +42,7 @@ class ParsingAndCalculating {
                     nestedOperation.removeLast()
 
                     val nestedStringOperation = nestedOperation.joinToString(separator = " ")
-                    val result:Any = calculate(nestedStringOperation) as Any
+                    val result: Any = calculate(nestedStringOperation) as Any
                     operationQueue.add(result)
                     nestedOperation.clear()
                 }
@@ -69,7 +67,7 @@ class ParsingAndCalculating {
             if (operationQueue[index] == '*'.toString()) {
                 val value = tempList.removeLastOrNull()
                 val result =
-                    mulCommand.execute(value.toString().toDouble(),operationQueue[next].toString()
+                    command.multiply(value.toString().toDouble(), operationQueue[next].toString()
                         .toDouble())
                 tempList.add(result)
                 processedOperators++
@@ -79,7 +77,7 @@ class ParsingAndCalculating {
 
                 val value = tempList.removeLastOrNull()
                 val result =
-                    devCommand.execute(value.toString().toDouble(), operationQueue[next].toString()
+                    command.divide(value.toString().toDouble(), operationQueue[next].toString()
                         .toDouble())
                 tempList.add(result)
                 processedOperators++
@@ -91,17 +89,17 @@ class ParsingAndCalculating {
         operationQueue.clear()
         operationQueue.addAll(tempList)
 
-        var result:Double = operationQueue.removeFirst().toString().toDouble()
+        var result: Double = operationQueue.removeFirst().toString().toDouble()
 
         val secondPriorityIterator = operationQueue.iterator()
         for ((index) in secondPriorityIterator.withIndex()) {
-            if((index + 1) % 2 > 0 && operationQueue.count() > index+1){
+            if ((index + 1) % 2 > 0 && operationQueue.count() > index + 1) {
                 val nextOperator = index + 1
                 if (operationQueue[index] == '+'.toString()) {
-                    result = addCommand.execute(result, operationQueue[nextOperator].toString()
+                    result = command.plus(result, operationQueue[nextOperator].toString()
                         .toDouble())
                 } else if (operationQueue[index] == '-'.toString()) {
-                    result = subCommand.execute(result, operationQueue[nextOperator].toString()
+                    result = command.minus(result, operationQueue[nextOperator].toString()
                         .toDouble())
                 }
             }
@@ -110,11 +108,12 @@ class ParsingAndCalculating {
         return result
     }
 
-    fun checkString (str: String?) : Boolean {
-        if (str!!.contains("[0-9]".toRegex()) && str.contains("[+./()-,*]".toRegex())) {
+    fun checkString(str: String?): Boolean {
+        if (requireNotNull(str).contains("[0-9]".toRegex())
+            && str.contains("[+./()-,*]".toRegex())
+        ) {
             return true
         }
         return false
     }
-
 }
